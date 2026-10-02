@@ -52,8 +52,16 @@ def build_one(path: Path) -> Path:
     return out
 
 
+def _match(name: str, only: str) -> bool:
+    """``only`` numérico casa só com o prefixo (``"13"`` não deve casar ``mikolov2013b``)."""
+    if not only:
+        return True
+    stem = name.removeprefix("nb_")
+    return stem.startswith(only) if only.isdigit() else only in name
+
+
 def sources(only: str = "") -> list[Path]:
-    return sorted(p for p in SRC.glob("nb_*.py") if only in p.name)
+    return sorted(p for p in SRC.glob("nb_*.py") if _match(p.name, only))
 
 
 def build_all(only: str = "") -> list[Path]:
@@ -83,7 +91,7 @@ def run_one(path: Path, timeout: int = 3600) -> float:
 
 def run_all(only: str = "", timeout: int = 3600) -> None:
     for p in sorted(OUT.glob("*.ipynb")):
-        if only and only not in p.name:
+        if not _match(p.name, only):
             continue
         print(f"running {p.name} …", flush=True)
         try:
@@ -96,7 +104,7 @@ def run_all(only: str = "", timeout: int = 3600) -> None:
 
 def clean_outputs(only: str = "") -> None:
     for p in sorted(OUT.glob("*.ipynb")):
-        if only and only not in p.name:
+        if not _match(p.name, only):
             continue
         nb = nbformat.read(p, as_version=4)
         for c in nb.cells:
