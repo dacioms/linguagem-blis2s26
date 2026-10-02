@@ -132,18 +132,22 @@ O artigo mede, com classificadores lineares sobre representações **congeladas*
     code('''
 from replang.data.corpora import load_macmorpho
 from sklearn.linear_model import LogisticRegression
-train = load_macmorpho(split="train", limit_sentences=1500 if FAST else 3000); test = load_macmorpho(split="test", limit_sentences=400)
-def feats(sent_tags, layer):
+train = load_macmorpho(split="train", limit_sentences=1200 if FAST else 2500); test = load_macmorpho(split="test", limit_sentences=400)
+# representações de todas as camadas, calculadas UMA vez por sentença (sem <s> e </s>)
+def all_layers(sent_tags):
     toks = [w.lower() for w, _ in sent_tags]
-    reps = model.representations(vocab.encode(toks))
-    return reps[layer, 1:-1]
+    return model.representations(vocab.encode(toks))[:, 1:-1]
+import time; t = time.time()
+reps_train = [all_layers(s) for s in train]; reps_test = [all_layers(s) for s in test]
+ytr = [t_ for s in train for _, t_ in s]; yte = np.array([t_ for s in test for _, t_ in s])
+print(f"representações de {len(train)+len(test)} sentenças em {time.time()-t:.0f}s")
 rows = []
 for layer in [0, 1, 2]:
-    Xtr = np.vstack([feats(s, layer) for s in train]); ytr = [t for s in train for _, t in s]
-    Xte = np.vstack([feats(s, layer) for s in test]); yte = np.array([t for s in test for _, t in s])
+    Xtr = np.vstack([r[layer] for r in reps_train]); Xte = np.vstack([r[layer] for r in reps_test])
     clf = LogisticRegression(max_iter=400, C=1.0).fit(Xtr, ytr)
     rows.append({"representação": f"biLM camada {layer}", "dim": Xtr.shape[1], "acurácia POS (linear, sem janela)": float((clf.predict(Xte) == yte).mean())})
-Xtr = np.vstack([np.stack([sg.get(w.lower(), np.zeros(sg.dim)) for w, _ in s]) for s in train]); Xte = np.vstack([np.stack([sg.get(w.lower(), np.zeros(sg.dim)) for w, _ in s]) for s in test])
+static = lambda s: np.stack([sg.get(w.lower(), np.zeros(sg.dim)) for w, _ in s])
+Xtr = np.vstack([static(s) for s in train]); Xte = np.vstack([static(s) for s in test])
 clf = LogisticRegression(max_iter=400).fit(Xtr, ytr)
 rows.append({"representação": "Skip-gram estático (sem janela)", "dim": sg.dim, "acurácia POS (linear, sem janela)": float((clf.predict(Xte) == yte).mean())})
 pos_layers = pd.DataFrame(rows)
@@ -163,14 +167,13 @@ grid = [np.array(w) for w in product([0.0, 1.0, 2.0], repeat=3)]
 def softmax(w): e = np.exp(w - w.max()); return e / e.sum()
 # tarefa A: POS (subconjunto menor para rapidez)
 tr, te = train[:600], test[:150]
-reps_tr = [model.representations(vocab.encode([w.lower() for w, _ in s]))[:, 1:-1] for s in tr]
-reps_te = [model.representations(vocab.encode([w.lower() for w, _ in s]))[:, 1:-1] for s in te]
-ytr = [t for s in tr for _, t in s]; yte = np.array([t for s in te for _, t in s])
+reps_tr, reps_te = reps_train[:600], reps_test[:150]
+ytr_s = [t_ for s in tr for _, t_ in s]; yte_s = np.array([t_ for s in te for _, t_ in s])
 best_pos = None
 for w in grid[::2]:
     s = softmax(w)
     Xtr = np.vstack([np.tensordot(s, r, axes=(0, 0)) for r in reps_tr]); Xte = np.vstack([np.tensordot(s, r, axes=(0, 0)) for r in reps_te])
-    acc = float((LogisticRegression(max_iter=300).fit(Xtr, ytr).predict(Xte) == yte).mean())
+    acc = float((LogisticRegression(max_iter=300).fit(Xtr, ytr_s).predict(Xte) == yte_s).mean())
     if best_pos is None or acc > best_pos[0]: best_pos = (acc, s)
 # tarefa B: separação de sentidos
 best_wsd = None
@@ -194,12 +197,11 @@ Com ELMo, o modelo SRL com **1 %** dos dados rotulados iguala o baseline com **1
 """),
     code('''
 rows = []
-for n in ([100, 300, 1000] if FAST else [100, 300, 1000, 3000]):
-    sub = train[:n]
-    for name, fn in [("biLM camada 1", lambda s: feats(s, 1)), ("Skip-gram estático", lambda s: np.stack([sg.get(w.lower(), np.zeros(sg.dim)) for w, _ in s]))]:
-        Xtr = np.vstack([fn(s) for s in sub]); ytr = [t for s in sub for _, t in s]
-        Xte = np.vstack([fn(s) for s in test]); yte = np.array([t for s in test for _, t in s])
-        acc = float((LogisticRegression(max_iter=300).fit(Xtr, ytr).predict(Xte) == yte).mean())
+for n in ([100, 300, 1000] if FAST else [100, 300, 1000, 2500]):
+    for name, Xall_tr, Xall_te in [("biLM camada 1", [r[1] for r in reps_train], [r[1] for r in reps_test]), ("Skip-gram estático", [static(s) for s in train], [static(s) for s in test])]:
+        Xtr = np.vstack(Xall_tr[:n]); ytr_n = [t_ for s in train[:n] for _, t_ in s]
+        Xte = np.vstack(Xall_te)
+        acc = float((LogisticRegression(max_iter=300).fit(Xtr, ytr_n).predict(Xte) == yte).mean())
         rows.append({"sentenças rotuladas": n, "representação": name, "acurácia": acc})
 px.line(pd.DataFrame(rows), x="sentenças rotuladas", y="acurácia", color="representação", markers=True, log_x=True, template="plotly_white", title="Eficiência amostral: POS × tamanho do treino rotulado").show()
 '''),
