@@ -7,6 +7,7 @@ linguagem-blis2s26/
 ├── configs/training.yaml         hiperparâmetros de referência (espelham os artigos)
 ├── src/replang/                  pacote Python
 │   ├── config.py                 caminhos, fontes públicas (SOURCES), flags (REPLANG_FAST, REPLANG_TOP_N)
+│   ├── accel.py                  detecção de backend (numpy/JAX), dispositivo (CPU/GPU) e nº de processos
 │   ├── embedding.py              WordVectors: cosseno, vizinhos, 3CosAdd/3CosMul, I/O (npz, word2vec txt, gensim)
 │   ├── utils/   text.py          normalização/tokenização PT (Hartmann §2.1);  download.py  cache de downloads
 │   ├── data/    corpora.py       Machado de Assis, Mac-Morpho, corpus sintético de gênero, toy corpus
@@ -16,12 +17,14 @@ linguagem-blis2s26/
 │   │            legal.py         corpora jurídicos (RulingBR, LeNER-Br, JurisBERT STS), léxico jurídico, perfil de corpus, deslocamento de domínio
 │   ├── models/  cooccurrence.py  contagem → PPMI → SVD; one-hot; BoW/TF-IDF
 │   │            word2vec_np.py   Skip-gram/CBOW, NEG/HS (Huffman), subamostragem, frases — numpy
-│   │            glove_np.py      GloVe com AdaGrad — numpy
+│   │            glove_np.py      GloVe com AdaGrad — numpy;  glove_jax.py  o mesmo em JAX (jit, GPU)
+│   │            word2vec_jax.py  Skip-gram NEG (+ subpalavras) em JAX
 │   │            fasttext_np.py   n-gramas, FNV-1a, Skip-gram com subpalavras, OOV, importância de n-gramas
 │   │            trainers.py      gensim (Word2Vec, FastText, Doc2Vec) com cache em data/models
 │   │            bilm_jax.py      biLM de 2 camadas (ELMo-lite) em JAX; mistura de camadas
 │   ├── eval/    analogies.py     acurácia por categoria;  similarity.py  Spearman + mini-conjuntos PT
-│   │            extrinsic.py     POS tagging (janela + regressão logística), similaridade de sentenças (Pearson/MSE)
+│   │            extrinsic.py     POS tagging (janela + classificador linear), similaridade de sentenças (Pearson/MSE)
+│   │            linear.py        LinearClassifier (sklearn lbfgs | JAX softmax+Adam);  parallel.py  parallel_map (joblib)
 │   ├── bias/    geometry.py      PCA dos pares, direção g, DirectBias, β indireto, geração de analogias, SVM, filtro morfológico PT
 │   │            debias.py        hard (Neutralize+Equalize), soft (gradiente), PairBias
 │   ├── viz/plots.py              figuras Plotly reutilizadas por notebooks e app

@@ -123,6 +123,7 @@ def notebooks(
     action: str = typer.Argument("build", help="build | run | both | clean"),
     only: str = typer.Option("", help="substring para filtrar notebooks"),
     timeout: int = typer.Option(3600),
+    jobs: int = typer.Option(1, help="notebooks executados em paralelo (processos)"),
 ):
     """Constrói (de ``notebooks/_src``) e/ou executa os notebooks ``.ipynb``."""
     sys.path.insert(0, str(PATHS.root / "scripts"))
@@ -131,7 +132,7 @@ def notebooks(
     if action in ("build", "both"):
         build_notebooks.build_all(only=only)
     if action in ("run", "both"):
-        build_notebooks.run_all(only=only, timeout=timeout)
+        build_notebooks.run_all(only=only, timeout=timeout, jobs=jobs)
     if action == "clean":
         build_notebooks.clean_outputs(only=only)
 

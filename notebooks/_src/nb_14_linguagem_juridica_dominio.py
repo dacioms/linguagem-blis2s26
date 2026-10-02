@@ -154,16 +154,18 @@ train = load_lener("train"); test = load_lener("test")
 tags = pd.Series([t for s in train for _, t in s]).value_counts()
 print(f"treino: {len(train)} sentenças / {tags.sum():,} tokens · teste: {len(test)} sentenças"); print(tags.head(8).to_dict())
 ftm = load_fasttext_model("legal_ft100"); ft_leg = load_local_model("legal_ft100"); ft_leg.name = "STF fastText"
-rows = []
-for wv, oov_fn in [(pt, None), (mac, None), (leg, None), (ft_leg, (lambda w: ftm.wv[w]) if ftm is not None else None)]:
+from replang.eval.parallel import parallel_map
+from replang.eval.extrinsic import _window_features
+def _ner(item):
+    wv, use_ft = item
+    oov_fn = (lambda w: ftm.wv[w]) if (use_ft and ftm is not None) else None
     t = time.time()
     r = pos_tagging_eval(wv, train, test, window=2, max_train_tokens=60000 if not FAST else 25000, oov_fn=oov_fn)
-    clf = r["clf"]
-    from replang.eval.extrinsic import _window_features
     Xte = np.vstack([_window_features(wv, [w for w, _ in s], 2, oov_fn) for s in test]); yte = np.array([t_ for s in test for _, t_ in s])
-    pred = clf.predict(Xte)
+    pred = r["clf"].predict(Xte)
     ents = [t_ for t_ in sorted(set(yte)) if t_ != "O"]
-    rows.append({"embedding": wv.name, "acurácia": r["acurácia"], "F1 entidades (macro, token)": f1_score(yte, pred, labels=ents, average="macro"), "taxa OOV": r["taxa_oov"], "s": round(time.time() - t)})
+    return {"embedding": wv.name, "acurácia": r["acurácia"], "F1 entidades (macro, token)": f1_score(yte, pred, labels=ents, average="macro"), "taxa OOV": r["taxa_oov"], "s": round(time.time() - t)}
+rows = parallel_map(_ner, [(pt, False), (mac, False), (leg, False), (ft_leg, True)])
 ner = pd.DataFrame(rows)
 ner.style.format({"acurácia": "{:.3f}", "F1 entidades (macro, token)": "{:.3f}", "taxa OOV": "{:.1%}"}).background_gradient(subset=["F1 entidades (macro, token)"], cmap="Greens")
 '''),

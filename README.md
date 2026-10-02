@@ -16,13 +16,14 @@
 | Complementar | Le & Mikolov (2014) — *Distributed Representations of Sentences and Documents* | 11 |
 | Complementar | Peters et al. (2018) — *Deep contextualized word representations* (ELMo) | 12 |
 
-Resumos detalhados de cada artigo: [`docs/artigos/`](docs/artigos/README.md). **Contexto jurídico** (aplicações, peculiaridades, Brasil, debates): [`docs/juridico.md`](docs/juridico.md). Estrutura didática completa: [`docs/00_estrutura_didatica.md`](docs/00_estrutura_didatica.md). Roteiro minuto a minuto: [`docs/roteiro_4h.md`](docs/roteiro_4h.md). Glossário: [`docs/glossario.md`](docs/glossario.md). Arquitetura: [`docs/arquitetura.md`](docs/arquitetura.md).
+Resumos detalhados de cada artigo: [`docs/artigos/`](docs/artigos/README.md). **Contexto jurídico** (aplicações, peculiaridades, Brasil, debates): [`docs/juridico.md`](docs/juridico.md). Estrutura didática completa: [`docs/00_estrutura_didatica.md`](docs/00_estrutura_didatica.md). Roteiro minuto a minuto: [`docs/roteiro_4h.md`](docs/roteiro_4h.md). Glossário: [`docs/glossario.md`](docs/glossario.md). Paralelismo e GPU: [`docs/aceleracao.md`](docs/aceleracao.md). Arquitetura: [`docs/arquitetura.md`](docs/arquitetura.md).
 
 ## Início rápido
 
 ```bash
 # 1. ambiente (Python ≥ 3.11; instale o uv: https://docs.astral.sh/uv/getting-started/installation/)
-uv sync --extra dev --extra contextual      # 'contextual' = JAX para o biLM (ELMo-lite)
+uv sync --extra dev --extra contextual      # 'contextual' = JAX (biLM, GloVe/Skip-gram acelerados, classificadores)
+# GPU NVIDIA (Linux/WSL2; RTX 4060/5050): uv sync --extra dev --extra cuda   → ver docs/aceleracao.md
 
 # 2. dados públicos (os artefatos pequenos já vêm no repositório: data/samples e data/processed)
 uv run replang download && uv run replang prepare
@@ -35,7 +36,7 @@ uv run replang app                            # http://localhost:8501
 
 # 5. notebooks (JupyterLab) — já estão executados; para regenerar as saídas:
 uv run jupyter lab notebooks/
-uv run replang notebooks run                  # ≈ 1 h em 4 CPUs (REPLANG_FAST=1 para a versão rápida)
+uv run replang notebooks run                  # ≈ 40 min em 4 CPUs (REPLANG_FAST=1 reduz; --jobs 3 em 8+ núcleos)
 
 # 6. testes e lint
 uv run pytest -q && uv run ruff check src tests scripts app

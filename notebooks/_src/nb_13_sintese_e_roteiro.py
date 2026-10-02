@@ -52,18 +52,20 @@ lex = PT.get(); an = load_analogies("pt-br")
 train = load_macmorpho(split="train"); test = load_macmorpho(split="test", limit_sentences=300)
 models = {"Wikipedia2Vec PT 100d": load_ptwiki()}
 for m in list_models():
-    if m["algo"] in ("word2vec", "fasttext", "glove-numpy"):
+    if m["algo"] in ("word2vec", "fasttext") or m["algo"].startswith("glove"):
         models[m["name"]] = load_local_model(m["name"])
-rows = []
-for name, wv in models.items():
+from replang.eval.parallel import parallel_map
+def _row(item):
+    name, wv = item
     t = time.time()
     r = evaluate_analogies(wv, an, restrict=30000, max_per_category=200).set_index("categoria")
     pos = pos_tagging_eval(wv, train, test, max_train_tokens=20000)["acurácia"]
     sts = sentence_similarity_eval(wv, MINI_STS_PT)["pearson"]
     g = gender_direction(wv, lex.definitional_pairs)
     neutras = [w for w in lex.professions + lex.stereotype_neutral if w in wv]
-    rows.append({"modelo": name, "dim": wv.dim, "|V|": len(wv), "cobertura analogias": r.loc["TOTAL", "cobertas"] / r.loc["TOTAL", "n"], "analogias (acurácia)": r.loc["TOTAL", "acurácia"],
-                 "POS": pos, "mini-STS ρ": sts, "DirectBias gênero": direct_bias(wv, neutras, g), "s": round(time.time() - t)})
+    return {"modelo": name, "dim": wv.dim, "|V|": len(wv), "cobertura analogias": r.loc["TOTAL", "cobertas"] / r.loc["TOTAL", "n"], "analogias (acurácia)": r.loc["TOTAL", "acurácia"],
+            "POS": pos, "mini-STS ρ": sts, "DirectBias gênero": direct_bias(wv, neutras, g), "s": round(time.time() - t)}
+rows = parallel_map(_row, list(models.items()))
 resumo = pd.DataFrame(rows).set_index("modelo")
 resumo.style.format({"cobertura analogias": "{:.0%}", "analogias (acurácia)": "{:.1%}", "POS": "{:.3f}", "mini-STS ρ": "{:.2f}", "DirectBias gênero": "{:.3f}"}).background_gradient(cmap="Blues", subset=["analogias (acurácia)", "POS", "mini-STS ρ"]).background_gradient(cmap="Reds", subset=["DirectBias gênero"])
 '''),

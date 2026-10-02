@@ -133,7 +133,9 @@ O artigo mede, com classificadores lineares sobre representações **congeladas*
 """),
     code('''
 from replang.data.corpora import load_macmorpho
-from sklearn.linear_model import LogisticRegression
+from replang.eval.linear import LinearClassifier
+from replang.accel import report
+print('aceleração:', report())
 train = load_macmorpho(split="train", limit_sentences=1200 if FAST else 2500); test = load_macmorpho(split="test", limit_sentences=400)
 # representações de todas as camadas, calculadas UMA vez por sentença (sem <s> e </s>)
 def all_layers(sent_tags):
@@ -146,11 +148,11 @@ print(f"representações de {len(train)+len(test)} sentenças em {time.time()-t:
 rows = []
 for layer in [0, 1, 2]:
     Xtr = np.vstack([r[layer] for r in reps_train]); Xte = np.vstack([r[layer] for r in reps_test])
-    clf = LogisticRegression(max_iter=400, C=1.0).fit(Xtr, ytr)
+    clf = LinearClassifier(max_iter=400, C=1.0).fit(Xtr, ytr)
     rows.append({"representação": f"biLM camada {layer}", "dim": Xtr.shape[1], "acurácia POS (linear, sem janela)": float((clf.predict(Xte) == yte).mean())})
 static = lambda s: np.stack([sg.get(w.lower(), np.zeros(sg.dim)) for w, _ in s])
 Xtr = np.vstack([static(s) for s in train]); Xte = np.vstack([static(s) for s in test])
-clf = LogisticRegression(max_iter=400).fit(Xtr, ytr)
+clf = LinearClassifier(max_iter=400).fit(Xtr, ytr)
 rows.append({"representação": "Skip-gram estático (sem janela)", "dim": sg.dim, "acurácia POS (linear, sem janela)": float((clf.predict(Xte) == yte).mean())})
 pos_layers = pd.DataFrame(rows)
 pos_layers.style.format({"acurácia POS (linear, sem janela)": "{:.3f}"}).background_gradient(subset=["acurácia POS (linear, sem janela)"], cmap="Greens")
@@ -175,7 +177,7 @@ best_pos = None
 for w in grid[::2]:
     s = softmax(w)
     Xtr = np.vstack([np.tensordot(s, r, axes=(0, 0)) for r in reps_tr]); Xte = np.vstack([np.tensordot(s, r, axes=(0, 0)) for r in reps_te])
-    acc = float((LogisticRegression(max_iter=300).fit(Xtr, ytr_s).predict(Xte) == yte_s).mean())
+    acc = float((LinearClassifier(max_iter=300).fit(Xtr, ytr_s).predict(Xte) == yte_s).mean())
     if best_pos is None or acc > best_pos[0]: best_pos = (acc, s)
 # tarefa B: separação de sentidos
 best_wsd = None
@@ -203,7 +205,7 @@ for n in ([100, 300, 1000] if FAST else [100, 300, 1000, 2500]):
     for name, Xall_tr, Xall_te in [("biLM camada 1", [r[1] for r in reps_train], [r[1] for r in reps_test]), ("Skip-gram estático", [static(s) for s in train], [static(s) for s in test])]:
         Xtr = np.vstack(Xall_tr[:n]); ytr_n = [t_ for s in train[:n] for _, t_ in s]
         Xte = np.vstack(Xall_te)
-        acc = float((LogisticRegression(max_iter=300).fit(Xtr, ytr_n).predict(Xte) == yte).mean())
+        acc = float((LinearClassifier(max_iter=300).fit(Xtr, ytr_n).predict(Xte) == yte).mean())
         rows.append({"sentenças rotuladas": n, "representação": name, "acurácia": acc})
 px.line(pd.DataFrame(rows), x="sentenças rotuladas", y="acurácia", color="representação", markers=True, log_x=True, template="plotly_white", title="Eficiência amostral: POS × tamanho do treino rotulado").show()
 '''),

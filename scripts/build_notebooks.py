@@ -89,17 +89,46 @@ def run_one(path: Path, timeout: int = 3600) -> float:
     return time.time() - t
 
 
-def run_all(only: str = "", timeout: int = 3600) -> None:
-    for p in sorted(OUT.glob("*.ipynb")):
-        if not _match(p.name, only):
-            continue
-        print(f"running {p.name} …", flush=True)
-        try:
-            dt = run_one(p, timeout)
+def _run_report(args):
+    path, timeout = args
+    try:
+        return path.name, run_one(path, timeout), None
+    except Exception as e:  # noqa: BLE001
+        return path.name, None, f"{type(e).__name__}: {str(e)[:800]}"
+
+
+def run_all(only: str = "", timeout: int = 3600, jobs: int = 1) -> None:
+    """Executa os notebooks; ``jobs > 1`` roda vários em paralelo (processos independentes).
+
+    Os notebooks não dependem uns dos outros (só de ``data/`` e ``data/models``), então o
+    paralelismo é seguro; em máquinas com 8+ núcleos, ``jobs=3`` ou ``4`` reduz o tempo total a
+    menos da metade. Cada processo usa várias *threads* (BLAS, gensim, JAX), por isso não compensa
+    passar de ``cpus // 2``."""
+    paths = [p for p in sorted(OUT.glob("*.ipynb")) if _match(p.name, only)]
+    if jobs <= 1 or len(paths) <= 1:
+        for p in paths:
+            print(f"running {p.name} …", flush=True)
+            name, dt, err = _run_report((p, timeout))
+            if err:
+                print(f"  FALHOU: {err}", flush=True)
+                raise RuntimeError(err)
             print(f"  ok em {dt:.0f}s", flush=True)
-        except Exception as e:  # noqa: BLE001
-            print(f"  FALHOU: {type(e).__name__}: {str(e)[:800]}", flush=True)
-            raise
+        return
+    from concurrent.futures import ProcessPoolExecutor, as_completed
+
+    print(f"executando {len(paths)} notebooks com {jobs} processos …", flush=True)
+    failures = []
+    with ProcessPoolExecutor(max_workers=jobs) as ex:
+        futs = {ex.submit(_run_report, (p, timeout)): p for p in paths}
+        for fut in as_completed(futs):
+            name, dt, err = fut.result()
+            if err:
+                failures.append((name, err))
+                print(f"{name}: FALHOU: {err}", flush=True)
+            else:
+                print(f"{name}: ok em {dt:.0f}s", flush=True)
+    if failures:
+        raise RuntimeError(f"{len(failures)} notebook(s) falharam: {[f[0] for f in failures]}")
 
 
 def clean_outputs(only: str = "") -> None:
@@ -121,10 +150,11 @@ if __name__ == "__main__":
     ap.add_argument("action", nargs="?", default="build", choices=["build", "run", "both", "clean"])
     ap.add_argument("--only", default="")
     ap.add_argument("--timeout", type=int, default=3600)
+    ap.add_argument("--jobs", type=int, default=1)
     a = ap.parse_args()
     if a.action in ("build", "both"):
         build_all(a.only)
     if a.action in ("run", "both"):
-        run_all(a.only, a.timeout)
+        run_all(a.only, a.timeout, a.jobs)
     if a.action == "clean":
         clean_outputs(a.only)

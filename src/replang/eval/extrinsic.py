@@ -13,9 +13,10 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.linear_model import LinearRegression
 
 from replang.embedding import WordVectors
+from replang.eval.linear import LinearClassifier
 from replang.utils.text import tokenize
 
 
@@ -48,8 +49,11 @@ def pos_tagging_eval(
     max_train_tokens: int = 60000,
     oov_fn=None,
     C: float = 1.0,
+    backend: str = "auto",
 ) -> dict:
-    """Acurácia de POS tagging com regressão logística multinomial sobre janelas de embeddings."""
+    """Acurácia de POS tagging com regressão logística multinomial sobre janelas de embeddings.
+
+    ``backend``: ``"sklearn"`` (lbfgs), ``"jax"`` (softmax + Adam, rápido em GPU) ou ``"auto"``."""
     X, y, n = [], [], 0
     for s in train_sents:
         toks = [w for w, _ in s]
@@ -59,7 +63,7 @@ def pos_tagging_eval(
         if n >= max_train_tokens:
             break
     X = np.vstack(X)
-    clf = LogisticRegression(max_iter=300, C=C, n_jobs=-1)
+    clf = LinearClassifier(backend=backend, max_iter=300, C=C)
     clf.fit(X, y)
     Xt, yt = [], []
     for s in test_sents:

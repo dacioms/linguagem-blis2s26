@@ -85,7 +85,7 @@ from replang.models.trainers import list_models
 br, eu = load_analogies("pt-br"), load_analogies("pt-eu")
 models = {"Wikipedia2Vec PT 100d": load_ptwiki()}
 for m in list_models():
-    if m["algo"] in ("word2vec", "fasttext", "glove-numpy"):
+    if m["algo"] in ("word2vec", "fasttext") or m["algo"].startswith("glove"):
         models[f"{m['name']} ({m['algo']})"] = load_local_model(m["name"])
 cmp_br = compare_models(models, br, restrict=30000, max_per_category=None if not FAST else 300).assign(variante="PT-BR")
 cmp_eu = compare_models(models, eu, restrict=30000, max_per_category=None if not FAST else 300).assign(variante="PT-EU")
