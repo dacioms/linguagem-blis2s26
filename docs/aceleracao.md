@@ -12,6 +12,19 @@ Resposta curta: **sim, há ganho**, mas ele vem de lugares diferentes do que se 
 | Executar 16 notebooks em sequência | `replang notebooks run --jobs N` | em 4 núcleos, `--jobs 2` ≈ 1,3×; em 8–16 núcleos, `--jobs 3–4` ≈ 2–3× | — |
 | gensim (word2vec, fastText, Doc2Vec) | já multi-*thread* (`REPLANG_WORKERS`) | — | gensim não usa GPU |
 
+### Efeito nos notebooks (mesma máquina, 4 núcleos, execução sequencial)
+
+| Notebook | antes | depois | ganho |
+|---|---|---|---|
+| 07 · avaliação extrínseca (POS em 10 modelos + STS + analogias) | 409 s | 65 s | 6,3× |
+| 12 · ELMo-lite (sondagens por camada, grade de pesos, eficiência amostral) | 920 s | 279 s | 3,3× |
+| 13 · síntese (quadro consolidado de 10 modelos) | 127 s | 21 s | 6,0× |
+| 10 · viés em PT (6 treinos de Skip-gram no corpus sintético) | 312 s | 142 s | 2,2× |
+| 14 · contexto jurídico I (NER em 4 embeddings + STS + área) | 200 s | 109 s | 1,8× |
+| 04 · GloVe (ganhou uma célula numpy × JAX) | 70 s | 90 s | — |
+
+Tempo total da sequência completa: ≈ 1 h → ≈ 30 min. A acurácia das sondagens lineares com o backend JAX fica 0,5–1 ponto abaixo do lbfgs (ex.: POS 0,905 → 0,898; NER F1 0,64 → 0,62), sem alterar nenhuma conclusão; para reproduzir os números exatos do lbfgs use `REPLANG_BACKEND=numpy`.
+
 Números completos reproduzíveis com `uv run python scripts/benchmark_accel.py` (tabela impressa em Markdown). Os valores de GPU não foram medidos aqui (o ambiente de construção não tem GPU) e são estimativas a partir do perfil dos kernels; execute o *benchmark* na sua máquina.
 
 ## Como ligar
