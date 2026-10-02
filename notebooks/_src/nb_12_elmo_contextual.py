@@ -69,7 +69,9 @@ for prefix in [["capitu", "olhou", "para"], ["o", "senhor"], ["não", "é"], ["a
     md("""
 ## 2. Uma palavra, vários vetores: *banco*, *manga*, *letra*
 
-Construímos sentenças com dois sentidos de cada palavra e comparamos o cosseno entre os vetores contextuais do mesmo token, por camada. Na **camada 0** todos são idênticos (cosseno 1 — é o embedding estático); nas camadas LSTM os sentidos se separam.
+Construímos sentenças com dois sentidos de cada palavra e comparamos o cosseno entre os vetores contextuais do mesmo token, por camada. Na **camada 0** todos são idênticos (cosseno 1 — é o embedding estático); nas camadas LSTM o vetor passa a depender da sentença.
+
+> **Leia os números com honestidade.** Com um biLM de 128 unidades treinado por minutos em 2,4 M tokens, a *dependência do contexto* aparece claramente (cossenos caem de 1,00 para ~0,8–0,9), mas a *separação de sentidos* é marginal (diferença de poucos centésimos entre "mesmo sentido" e "sentidos diferentes"). O ELMo original tem 4096 unidades, CNN de caracteres e 1 bilhão de tokens; é essa escala que faz a Tabela 4 do artigo funcionar. O mecanismo é o mesmo — a capacidade, não.
 """),
     code('''
 from replang.utils import tokenize
@@ -159,7 +161,7 @@ Sem janela de contexto, o vetor estático "não sabe" se *a* é artigo ou prepos
     md("""
 ## 5. A mistura ELMo: aprendendo $s^{task}$ (eq. 1, Fig. 2)
 
-Em vez de escolher uma camada, a tarefa aprende pesos. Fazemos uma busca simples sobre $s$ (softmax de 3 parâmetros) para a tarefa de POS e para a tarefa de "separar sentidos" (maximizar a diferença intra/inter-sentido da seção 2). O artigo observa: tarefas sintáticas pesam a camada 1; semânticas, a camada 2 (Fig. 2).
+Em vez de escolher uma camada, a tarefa aprende pesos. Fazemos uma busca simples sobre $s$ (softmax de 3 parâmetros) para a tarefa de POS e para a tarefa de "separar sentidos" (maximizar a diferença intra/inter-sentido da seção 2). O artigo observa: tarefas sintáticas pesam a camada 1; semânticas, a camada 2 (Fig. 2). No nosso modelo pequeno, espere o resultado de POS ser nítido (pesos nas camadas LSTM) e o de sentidos ser inconclusivo (a diferença da seção 2 é ≈ 0 em todas as camadas) — o que, por si, já ilustra a Fig. 2: *os pesos refletem onde a informação útil está*.
 """),
     code('''
 from itertools import product
