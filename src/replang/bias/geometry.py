@@ -340,3 +340,20 @@ def top_indirect_bias_pairs(
         "β", ascending=False
     )
     return df.head(topn).reset_index(drop=True)
+
+
+def predicted_names(wv: WordVectors, seed_names: Sequence[str], non_names: Sequence[str], *, candidates: Sequence[str] | None = None,
+                    threshold: float = 0.0, C: float = 1.0) -> set[str]:
+    """Nomes próprios são "específicos de gênero" por definição (*Mary/John* está nos pares do artigo),
+    mas dominam a geração de analogias. Um SVM linear nomes × substantivos comuns, treinado com
+    listas-semente, estima o conjunto de nomes no vocabulário para excluí-los."""
+    from sklearn.svm import LinearSVC
+
+    pos = [w for w in seed_names if w in wv]
+    neg = [w for w in non_names if w in wv]
+    X = wv.matrix(pos + neg)
+    y = np.array([1] * len(pos) + [0] * len(neg))
+    clf = LinearSVC(C=C, class_weight="balanced", max_iter=5000).fit(X, y)
+    cands = [w for w in (candidates or wv.words[:25000]) if w in wv]
+    scores = clf.decision_function(wv.matrix(cands))
+    return {w for w, s in zip(cands, scores, strict=True) if s > threshold}

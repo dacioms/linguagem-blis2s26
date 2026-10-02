@@ -172,11 +172,14 @@ print("football antes :", extremes(en, axis_before, profs, 6)[1]); print("footba
 Sem avaliadores humanos, contamos quantas das analogias geradas envolvem **profissões** (um proxy grosseiro de "estereótipo ocupacional").
 """),
     code('''
-from replang.bias import generate_analogies, expand_gender_specific
-expanded, _ = expand_gender_specific(en, lex.gender_specific)   # §7: nomes próprios etc. (ver notebook 08)
+from replang.bias import generate_analogies, expand_gender_specific, predicted_names
+from replang.data.lexicons import EN_FIRST_NAMES_F, EN_FIRST_NAMES_M
+expanded, _ = expand_gender_specific(en, lex.gender_specific, threshold=1.0)   # §7 (ver notebook 08)
+names = predicted_names(en, EN_FIRST_NAMES_F + EN_FIRST_NAMES_M, profs[:120] + [w for w in en.words[200:1200] if w not in lex.all_gender_words()][:200])
+excl = set(expanded) | names
 prof_set = set(profs)
 for name, wv in [("antes", en), ("depois", hard)]:
-    an = generate_analogies(wv, "she", "he", delta=1.0, topn=100, restrict=25000, exclude=expanded)
+    an = generate_analogies(wv, "she", "he", delta=1.0, topn=100, restrict=25000, exclude=excl)
     n_prof = int((an.x.isin(prof_set) | an.y.isin(prof_set)).sum())
     print(f"{name}: {len(an)} analogias geradas; {n_prof} envolvem profissões; exemplos: {list(zip(an.x[:8], an.y[:8]))}")
 '''),

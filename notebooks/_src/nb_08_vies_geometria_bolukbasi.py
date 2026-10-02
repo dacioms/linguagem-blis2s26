@@ -104,13 +104,20 @@ print("excluindo só a lista-semente (218 palavras):", list(zip(an_raw.x[:14], a
 Quase tudo são **nomes próprios** (*amy–barry*, *hannah–wallace*): o embedding sabe que nomes têm gênero — analogias *apropriadas*, não estereótipos, mas que escondem o resto. O artigo resolve isso no §7 generalizando a lista de 218 palavras a todo o vocabulário com um **SVM linear** (6.449 palavras específicas de gênero no w2vNEWS). Fazemos o mesmo e excluímos o conjunto expandido.
 """),
     code('''
-expanded, svm_acc = expand_gender_specific(en, lex.gender_specific)
-print(f"lista expandida pelo SVM: {len(expanded)} palavras (acurácia balanceada {svm_acc:.1%}); amostra dos adicionados: {[w for w in expanded if w not in lex.gender_specific][:25]}")
-an = generate_analogies(en, "she", "he", delta=1.0, topn=40, restrict=25000, exclude=expanded)
+from replang.bias import predicted_names
+from replang.data.lexicons import EN_FIRST_NAMES_F, EN_FIRST_NAMES_M
+expanded, svm_acc = expand_gender_specific(en, lex.gender_specific, threshold=1.0)
+print(f"lista expandida pelo SVM (§7): {len(expanded)} palavras (acurácia balanceada {svm_acc:.1%})")
+# Nomes próprios: um segundo classificador (nomes-semente × substantivos comuns) estima os nomes do vocabulário
+non_names = profs[:120] + [w for w in en.words[200:1200] if w not in lex.all_gender_words()][:200]
+names = predicted_names(en, EN_FIRST_NAMES_F + EN_FIRST_NAMES_M, non_names)
+print(f"nomes próprios estimados: {len(names)} (amostra: {sorted(names)[:12]})")
+exclude_all = set(expanded) | names
+an = generate_analogies(en, "she", "he", delta=1.0, topn=40, restrict=25000, exclude=exclude_all)
 an.head(40).T
 '''),
     md("""
-Leia a lista com o olhar do artigo: há pares **apropriados** (relacionados a gênero por definição, que escaparam da nossa lista de exclusão — nomes próprios, por exemplo) e pares **estereotipados** (profissões, esportes, adjetivos). O método é indiferente a isso; o julgamento humano é que separa. É o que a Fig. 2 do artigo mostra.
+Leia a lista com o olhar do artigo: há pares **apropriados** (relacionados a gênero por definição, que escaparam dos filtros — alguns nomes, *marries–nobleman*), pares **estereotipados** (*lovely–magnificent*, *beauty–great*, *baby/marriage/kids* de um lado, *league/rule/offense/field* do outro, *pink–red*) e **ruído** (o GloVe 50d é pequeno e ‖x − y‖ ≤ 1 deixa passar pares vagos). O método é indiferente a isso; o julgamento humano é que separa — é o que a Fig. 2 do artigo mostra, e por isso os autores recorreram à *crowd*.
 """),
     md("""
 ## 5. Identificando o subespaço de gênero (§5.1, Fig. 6)

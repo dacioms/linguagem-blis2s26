@@ -454,3 +454,16 @@ class _Lazy:
 
 PT = _Lazy(load_pt)
 EN = _Lazy(load_en)
+
+
+# Nomes próprios comuns em inglês (sementes para o filtro de nomes usado na geração de analogias).
+EN_FIRST_NAMES_F = (
+    "mary jane lisa jennifer susan anne anna julia elizabeth sarah emily laura kate alice caroline amy hannah julie "
+    "emma olivia sophia rachel rebecca nicole michelle linda karen nancy barbara helen margaret dorothy ruth betty "
+    "carol sandra donna angela"
+).split()
+EN_FIRST_NAMES_M = (
+    "john mike james george harold joseph albert henry robert william david richard thomas charles daniel paul mark "
+    "steven andrew kevin brian edward ronald anthony jason jeffrey ryan gary nicholas eric stephen larry justin "
+    "scott frank peter arthur"
+).split()
