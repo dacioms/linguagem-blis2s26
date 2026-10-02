@@ -1,0 +1,18 @@
+name: ci
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.11"
+      - run: uv sync --extra dev
+      - run: uv run ruff check src tests scripts app
+      - run: uv run pytest -q
+      - name: smoke test do app (sem modelos locais)
+        run: uv run python -c "import sys; sys.path.insert(0,'app'); import streamlit_app" || true
