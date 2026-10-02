@@ -1,0 +1,11 @@
+# Hiperparâmetros de referência (espelham os dos artigos quando aplicável)
+word2vec:
+  skipgram: {dim: 100, window: 5, negative: 10, sample: 1.0e-4, min_count: 5, epochs: 5}   # Mikolov 2013b: NEG 5–20, t=1e-5..1e-4
+  cbow:     {dim: 100, window: 5, negative: 10, sample: 1.0e-4, min_count: 5, epochs: 5}
+glove:      {dim: 100, window: 5, x_max: 50, alpha: 0.75, epochs: 15}                       # Pennington 2014: x_max=100, α=3/4
+fasttext:   {dim: 100, window: 5, min_n: 3, max_n: 6, negative: 10, epochs: 5}              # Bojanowski 2017: n ∈ [3,6], bucket 2e6
+doc2vec:    {dim: 100, window: 5, epochs: 20}
+bilm:       {emb: 64, hid: 128, layers: 2, steps: 2500, batch: 32, seq_len: 24}             # Peters 2018: 2 camadas, 4096 unidades (!)
+debias:
+  soft_lambda: 0.2                                                                           # Bolukbasi 2016: λ = 0.2
+  analogy_delta: 1.0                                                                         # δ = 1 ⇒ ângulo ≤ π/3
