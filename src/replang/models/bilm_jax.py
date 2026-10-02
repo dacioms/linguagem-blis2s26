@@ -206,11 +206,18 @@ class BiLM:
         return self
 
     # ------------------------------------------------------------- representações
-    def representations(self, encoded: list[int]) -> np.ndarray:
-        """``(L+1, T, 2*hid)`` para uma sentença codificada (inclui <s> e </s>)."""
-        tok = jnp.asarray(np.array(encoded, dtype=np.int32)[None, :])
-        reps, _, _ = self._fwd_fn(self.params, tok)
-        return np.array(reps[:, 0])  # cópia gravável (np.asarray de um array JAX é somente leitura)
+    def representations(self, encoded: list[int], *, bucket: int = 16) -> np.ndarray:
+        """``(L+1, T, 2*hid)`` para uma sentença codificada (inclui <s> e </s>).
+
+        O comprimento é preenchido ao próximo múltiplo de ``bucket`` (com ``<pad>`` à direita, que
+        não afeta as posições anteriores no LM *forward* mas afeta levemente o *backward*), para que o
+        ``jax.jit`` compile poucas vezes em vez de uma por comprimento de sentença."""
+        T = len(encoded)
+        Tp = max(bucket, ((T + bucket - 1) // bucket) * bucket)
+        arr = np.zeros((1, Tp), dtype=np.int32)
+        arr[0, :T] = encoded
+        reps, _, _ = self._fwd_fn(self.params, jnp.asarray(arr))
+        return np.array(reps[:, 0, :T])  # cópia gravável (np.asarray de um array JAX é somente leitura)
 
     def perplexity(self, encoded: list[list[int]], seq_len: int = 24) -> float:
         tot, n = 0.0, 0
