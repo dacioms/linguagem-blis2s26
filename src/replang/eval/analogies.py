@@ -83,28 +83,22 @@ def evaluate_analogies(
             }
         )
     df = pd.DataFrame(rows)
-    tot = {
-        "categoria": "TOTAL",
-        "tipo": "",
-        "n": df.n.sum(),
-        "cobertas": df.cobertas.sum(),
-        "acertos": df.acertos.sum(),
-    }
-    tot["acurácia"] = tot["acertos"] / tot["cobertas"] if tot["cobertas"] else np.nan
+
+    def _total(label: str, tipo: str, sub: pd.DataFrame) -> dict:
+        ev = int(sub.avaliadas.sum())
+        return {
+            "categoria": label,
+            "tipo": tipo,
+            "n": int(sub.n.sum()),
+            "cobertas": int(sub.cobertas.sum()),
+            "avaliadas": ev,
+            "acertos": int(sub.acertos.sum()),
+            "acurácia": sub.acertos.sum() / ev if ev else np.nan,
+        }
+
+    tot = _total("TOTAL", "", df)
     for tipo in ("semântica", "sintática"):
-        sub = df[df.tipo == tipo]
-        rows.append(
-            {
-                "categoria": f"TOTAL {tipo}",
-                "tipo": tipo,
-                "n": sub.n.sum(),
-                "cobertas": sub.cobertas.sum(),
-                "acertos": sub.acertos.sum(),
-                "acurácia": sub.acertos.sum() / sub.cobertas.sum()
-                if sub.cobertas.sum()
-                else np.nan,
-            }
-        )
+        rows.append(_total(f"TOTAL {tipo}", tipo, df[df.tipo == tipo]))
     rows.append(tot)
     return pd.DataFrame(rows)
 
