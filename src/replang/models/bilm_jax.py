@@ -217,7 +217,9 @@ class BiLM:
         arr = np.zeros((1, Tp), dtype=np.int32)
         arr[0, :T] = encoded
         reps, _, _ = self._fwd_fn(self.params, jnp.asarray(arr))
-        return np.array(reps[:, 0, :T])  # cópia gravável (np.asarray de um array JAX é somente leitura)
+        return np.array(
+            reps[:, 0, :T]
+        )  # cópia gravável (np.asarray de um array JAX é somente leitura)
 
     def perplexity(self, encoded: list[list[int]], seq_len: int = 24) -> float:
         tot, n = 0.0, 0

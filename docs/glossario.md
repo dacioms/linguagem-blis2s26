@@ -41,3 +41,9 @@
 | **Viés indireto β(w,v)** | Fração da similaridade entre duas neutras explicada pela componente de gênero (Bolukbasi §5.3) | nb 08 |
 | **Wang2Vec** | word2vec sensível à ordem (janela estruturada; Ling 2015); melhor em POS/ASSIN em Hartmann | nb 06 |
 | **Word2Vec** | Família CBOW/Skip-gram de Mikolov (2013a) | nb 02 |
+| **Acórdão / ementa / relatório / voto** | Partes de uma decisão colegiada; a ementa é o resumo oficial | nb 14 |
+| **Deslocamento de domínio** | Mudança da vizinhança (sentido) de uma palavra entre corpora; medido por Jaccard das vizinhanças | nb 14, app p. 10 |
+| **LeNER-Br / RulingBR / JurisBERT STS / UlyssesNER-Br** | Corpora jurídicos brasileiros públicos (NER em decisões; decisões do STF; pares de ementas; projetos de lei) | nb 14, 15 |
+| **Papéis processuais** | Autor/ré, apelante/apelado, agravante/agravado…; pares morfológicos com marca de gênero | nb 14, 15 |
+| **Precedente / demandas repetitivas** | Decisões anteriores com força persuasiva ou vinculante; agrupamento por similaridade (Athos, Radar) | nb 14, 15 |
+| **Resolução CNJ 332/2020 (e 615/2025)** | Normas do CNJ sobre ética, transparência e governança da IA no Judiciário | nb 15, docs/juridico.md |

@@ -22,6 +22,7 @@ from views import (  # noqa: E402
     contextual,
     coocorrencia,
     inicio,
+    juridico,
     projecoes,
     subpalavras,
     treino,
@@ -40,6 +41,7 @@ pages = [
     st.Page(avaliacao.render, title="7 · Avaliação intrínseca × extrínseca", icon="📏"),
     st.Page(vies.render, title="8 · Viés de gênero e debias", icon="⚖️"),
     st.Page(contextual.render, title="9 · Representações contextuais (ELMo)", icon="🌀"),
+    st.Page(juridico.render, title="10 · Contexto jurídico", icon="⚖️"),
 ]
 nav = st.navigation(pages)
 nav.run()

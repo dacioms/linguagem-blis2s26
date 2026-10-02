@@ -16,7 +16,7 @@
 | Complementar | Le & Mikolov (2014) — *Distributed Representations of Sentences and Documents* | 11 |
 | Complementar | Peters et al. (2018) — *Deep contextualized word representations* (ELMo) | 12 |
 
-Resumos detalhados de cada artigo: [`docs/artigos/`](docs/artigos/README.md). Estrutura didática completa: [`docs/00_estrutura_didatica.md`](docs/00_estrutura_didatica.md). Roteiro minuto a minuto: [`docs/roteiro_4h.md`](docs/roteiro_4h.md). Glossário: [`docs/glossario.md`](docs/glossario.md). Arquitetura: [`docs/arquitetura.md`](docs/arquitetura.md).
+Resumos detalhados de cada artigo: [`docs/artigos/`](docs/artigos/README.md). **Contexto jurídico** (aplicações, peculiaridades, Brasil, debates): [`docs/juridico.md`](docs/juridico.md). Estrutura didática completa: [`docs/00_estrutura_didatica.md`](docs/00_estrutura_didatica.md). Roteiro minuto a minuto: [`docs/roteiro_4h.md`](docs/roteiro_4h.md). Glossário: [`docs/glossario.md`](docs/glossario.md). Arquitetura: [`docs/arquitetura.md`](docs/arquitetura.md).
 
 ## Início rápido
 
@@ -28,7 +28,7 @@ uv sync --extra dev --extra contextual      # 'contextual' = JAX para o biLM (EL
 uv run replang download && uv run replang prepare
 
 # 3. modelos locais sobre o corpus Machado de Assis (≈ 15 min em 4 CPUs; --fast ≈ 6 min)
-uv run replang train
+uv run replang train           # + `uv run replang train legal` para os modelos jurídicos (≈ 4 min)
 
 # 4. interface interativa
 uv run replang app                            # http://localhost:8501
@@ -61,12 +61,14 @@ Ou, com `make`: `make setup data train app` / `make test`.
 | 11 | `11_doc2vec_sentencas_documentos` | C | PV-DM/PV-DBOW em Machado, gêneros literários, inferência, comparação com média de vetores |
 | 12 | `12_elmo_contextual` | F | biLM em JAX, polissemia (*banco*, *manga*), camadas × tarefas, mistura ELMo, eficiência amostral |
 | 13 | `13_sintese_e_roteiro` | — | linha do tempo, quadro consolidado, as três perguntas, roteiro |
+| 14 | `14_linguagem_juridica_dominio` | ⚖️ | a língua do Direito; deslocamento de domínio geral × jurídico (STF); NER (LeNER-Br), similaridade de ementas (JurisBERT), área (RulingBR) |
+| 15 | `15_vies_aplicacoes_governanca_juridica` | ⚖️ | viés de gênero no corpus do STF, papéis processuais, ranqueador com consultas gêmeas, debias e limites, aplicações e governança (CNJ, LGPD) |
 
 Os notebooks são gerados a partir de fontes Python em `notebooks/_src/` (`uv run replang notebooks build`), o que mantém o texto revisável e os *diffs* legíveis.
 
 ## A interface (`app/`)
 
-Dez páginas Streamlit espelhando os blocos: coocorrência → PPMI → SVD interativo; treinar word2vec ao vivo (numpy); vizinhos e similaridade entre modelos; analogias (3CosAdd/3CosMul + benchmark); projeções 2D; subpalavras e OOV (fastText); avaliação intrínseca × extrínseca; viés de gênero e *debias* (direção, extremos, DirectBias, β, analogias geradas, hard/soft antes × depois); representações contextuais (ELMo-lite).
+Onze páginas Streamlit espelhando os blocos (a 10ª compara embeddings gerais × jurídicos): coocorrência → PPMI → SVD interativo; treinar word2vec ao vivo (numpy); vizinhos e similaridade entre modelos; analogias (3CosAdd/3CosMul + benchmark); projeções 2D; subpalavras e OOV (fastText); avaliação intrínseca × extrínseca; viés de gênero e *debias* (direção, extremos, DirectBias, β, analogias geradas, hard/soft antes × depois); representações contextuais (ELMo-lite).
 
 ## Dados públicos
 
@@ -79,6 +81,9 @@ Dez páginas Streamlit espelhando os blocos: coocorrência → PPMI → SVD inte
 | `questions-words.txt`; LX-4WAnalogies (BR/EU) | analogias | Apache 2.0; NLX |
 | `tolga-b/debiaswe` | pares definicionais, profissões, palavras específicas de gênero | MIT |
 | NILC embeddings (conector opcional) | os 31 modelos de Hartmann et al. | uso acadêmico |
+| RulingBR (STF, 2011–2018) | corpus jurídico: embeddings de domínio, classificação de área | dados públicos do STF; dataset acadêmico |
+| LeNER-Br | NER jurídico (avaliação extrínseca) | acadêmico |
+| JurisBERT STS (STJ/TJMS) | similaridade de ementas | dados públicos dos tribunais; dataset acadêmico |
 
 ## O pacote `replang`
 

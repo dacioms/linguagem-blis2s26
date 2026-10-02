@@ -114,6 +114,21 @@ SOURCES: dict[str, dict[str, str]] = {
         "desc": "Listas de pares definicionais, pares de equalização, palavras específicas de gênero e profissões (Bolukbasi et al., 2016)",
         "license": "MIT",
     },
+    "rulingbr": {
+        "url": "https://raw.githubusercontent.com/diego-feijo/rulingbr/master/rulingbr-v1.2.tar.xz",
+        "desc": "RulingBR: 10.574 decisões do STF (2011–2018) — corpus jurídico para o eixo 'contexto jurídico'",
+        "license": "Dados públicos do STF; dataset acadêmico (Feijó & Moreira, 2018)",
+    },
+    "lener_br": {
+        "url": "https://raw.githubusercontent.com/peluz/lener-br/master/leNER-Br/train/train.conll",
+        "desc": "LeNER-Br: reconhecimento de entidades em decisões judiciais (PESSOA, ORGANIZACAO, LEGISLACAO, JURISPRUDENCIA…)",
+        "license": "Acadêmico (Luz de Araujo et al., 2018)",
+    },
+    "jurisbert_sts": {
+        "url": "https://raw.githubusercontent.com/alfaneo-ai/brazilian-legal-text-dataset/main/resources/sts/benchmark/STJ.csv",
+        "desc": "JurisBERT: pares de ementas com similaridade (STJ/TJMS/PJERJ) — o 'ASSIN jurídico'",
+        "license": "Dados públicos dos tribunais; dataset acadêmico (Viegas et al., 2023)",
+    },
     # Conector opcional (não acessível a partir de todas as redes): embeddings NILC de Hartmann et al. (2017)
     "nilc": {
         "url": "http://nilc.icmc.usp.br/embeddings",

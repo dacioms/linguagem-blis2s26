@@ -9,7 +9,7 @@ uv run replang notebooks both --only 08   # regenera e executa um só
 uv run jupyter lab .                      # abrir
 ```
 
-Pré-requisitos: `uv sync --extra dev --extra contextual`, dados em `data/samples` (já versionados) e modelos em `data/models` (`uv run replang train`). Sem o extra `contextual` (JAX), o notebook 12 não roda.
+Pré-requisitos: `uv sync --extra dev --extra contextual`, dados em `data/samples` (já versionados) e modelos em `data/models` (`uv run replang train` e `uv run replang train legal`). Sem o extra `contextual` (JAX), o notebook 12 não roda.
 
 | # | Tema | Tempo aprox. de execução |
 |---|---|---|
@@ -27,5 +27,7 @@ Pré-requisitos: `uv sync --extra dev --extra contextual`, dados em `data/sample
 | 11 | Doc2Vec | 6 min |
 | 12 | ELMo-lite (JAX) | 15 min |
 | 13 | síntese | 8 min |
+| 14 | contexto jurídico I: língua do Direito, deslocamento de domínio, NER/STS/área | 10 min |
+| 15 | contexto jurídico II: viés, ranqueador gêmeo, debias, governança | 3 min |
 
 As figuras usam o renderer `plotly_mimetype+notebook_connected`: o JupyterLab renderiza offline; a visualização HTML carrega `plotly.js` de um CDN.
