@@ -35,7 +35,7 @@ uv run replang app                            # http://localhost:8501
 
 # 5. notebooks (JupyterLab) — já estão executados; para regenerar as saídas:
 uv run jupyter lab notebooks/
-uv run replang notebooks run                  # ≈ 30 min (REPLANG_FAST=1 para a versão rápida)
+uv run replang notebooks run                  # ≈ 1 h em 4 CPUs (REPLANG_FAST=1 para a versão rápida)
 
 # 6. testes e lint
 uv run pytest -q && uv run ruff check src tests scripts app

@@ -41,7 +41,7 @@ linguagem-blis2s26/
 1. `replang download` → `data/raw` (GitHub raw, releases do gensim-data, S3 do Wikipedia2Vec).
 2. `replang prepare` → `data/processed` (corpora) e `data/samples` (embeddings truncados a 50k palavras, float16).
 3. `replang train` → `data/models` (gensim, numpy, JAX) com JSON de metadados.
-4. `replang notebooks both` → executa `notebooks/*.ipynb` (≈ 30 min; `REPLANG_FAST=1` para versão rápida).
+4. `replang notebooks both` → executa `notebooks/*.ipynb` (≈ 1 h em 4 CPUs; `REPLANG_FAST=1` para versão rápida).
 5. `replang app` → Streamlit lê `data/samples` e `data/models`.
 
 ## Decisões de projeto
