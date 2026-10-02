@@ -55,7 +55,7 @@ def render():
     with tab2:
         st.plotly_chart(
             cooccurrence_heatmap(
-                cm.dense_counts(), "Contagens de coocorrência (janela = %d)" % window
+                cm.dense_counts(), f"Contagens de coocorrência (janela = {window})"
             ),
             width="stretch",
         )

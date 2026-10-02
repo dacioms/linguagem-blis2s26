@@ -83,7 +83,7 @@ def render():
             tok_labels.append(f"{w} ⟨{' '.join(sent)[:30]}…⟩")
     T = np.stack(tok_vecs)
     T /= np.linalg.norm(T, axis=1, keepdims=True) + 1e-9
-    for k, sent in enumerate(sents[:3]):
+    for sent in sents[:3]:
         reps = model.representations(vocab.encode(sent))
         layer = 2 if layer_mode.startswith("mistura") else int(layer_mode.split()[1])
         q = reps[layer][sent.index(target) + 1]

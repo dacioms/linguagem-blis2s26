@@ -39,7 +39,7 @@ def render():
         "Conclusão: os rankings não concordam — analogias não são bom proxy. Reproduza a comparação com os modelos disponíveis."
     )
     opts = [o for o in model_options(("pt",))]
-    sel = st.multiselect("modelos", opts, default=opts[:3])
+    sel = st.multiselect("modelos", opts, default=opts[:2])
     c1, c2, c3 = st.columns(3)
     n_train = c1.select_slider("tokens de treino (POS)", [10000, 30000, 60000, 120000], value=30000)
     n_test = c2.select_slider("sentenças de teste (POS)", [200, 500, 1000], value=500)
