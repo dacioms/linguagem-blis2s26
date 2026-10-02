@@ -138,3 +138,17 @@
 **Notebook 13 · `docs/roteiro_4h.md`**
 
 - Linha do tempo 1954 → 2019; quadro consolidado dos modelos; respostas às três perguntas do título; perguntas abertas para a plateia.
+
+---
+
+## Nível 8 — Contexto jurídico (extensão transversal)
+
+**Notebooks 14, 15 · App p. 10 · `replang.data.legal` · `docs/juridico.md`**
+
+8.1. **Por que o Direito é especial**: o texto é o objeto; custo assimétrico do erro; dever de fundamentação (CF art. 93, IX) e contraditório; corpus institucional e histórico; regulação específica (CNJ 332/2020 e 615/2025, LGPD art. 20, PL 2338/2023).
+8.2. **A língua do Direito**: polissemia técnica (*sentença, ação, parte, título, pena, trânsito, remédio*), latinismos, registro formal, sentenças longas, intertextualidade (artigos, súmulas, precedentes), estrutura ementa/relatório/voto, negação decisiva (*provido / não provido*).
+8.3. **Particularidades brasileiras**: precedentes vinculantes no *civil law* (EC 45, CPC/2015 → similaridade entre casos como operação jurídica); gênero gramatical nos papéis processuais; numeração e citação (leis, processos CNJ, §, incisos); siglas institucionais; variação entre tribunais; linguagem simples; dados abertos heterogêneos.
+8.4. **Corpora públicos**: RulingBR (STF; treino dos embeddings jurídicos e classificação de área), LeNER-Br (NER), JurisBERT STS (similaridade de ementas), UlyssesNER-Br (projetos de lei).
+8.5. **Bloco a bloco** (nb 14): perfil dos corpora (sentenças longas, numerais, latim); o pré-processamento de Hartmann destrói citações legais; PPMI jurídico; **deslocamento de domínio** (Jaccard das vizinhanças ≈ 0 nas palavras polissêmicas); analogias gerais sem cobertura × analogias jurídicas; avaliação **na tarefa**: NER (LeNER-Br), STS de ementas (JurisBERT), área do Direito (RulingBR) — domínio e fastText vencem, TF-IDF é rival forte; morfologia *-ante/-ado*; frases (*habeas_corpus*, *repercussão_geral*).
+8.6. **O viés no Direito** (nb 15): direção de gênero no corpus do STF; papéis processuais (separação morfológica × centro do par); termos neutros (crime, família, trabalho) no eixo de gênero, STF × Wikipédia; viés indireto; analogias geradas; **experimento de amplificação** (ranqueador de ementas com consultas gêmeas *autora/autor*); debias e o teste de Gonen & Goldberg; auditoria × decisão.
+8.7. **Aplicações e governança**: pesquisa de jurisprudência, triagem/classificação (Victor), demandas repetitivas (Athos, Radar), extração de entidades, sumarização/linguagem simples, contratos, previsão de resultado (risco); arcabouço normativo; seis debates estruturados (`docs/juridico.md` §7).

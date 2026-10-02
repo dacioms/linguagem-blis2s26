@@ -77,7 +77,12 @@ def download(all: bool = typer.Option(True, help="baixa corpora e embeddings pr�
 
 
 @app.command()
-def prepare(top_n: int = typer.Option(None, help="palavras mantidas dos embeddings pré-treinados")):
+def prepare(
+    top_n: int = typer.Option(None, help="palavras mantidas dos embeddings pré-treinados"),
+    legal: bool = typer.Option(
+        True, help="também prepara os corpora jurídicos (RulingBR, LeNER-Br, JurisBERT)"
+    ),
+):
     """Gera corpora processados e caches truncados de embeddings (``data/processed``, ``data/samples``)."""
     from replang.data.corpora import prepare_machado, prepare_macmorpho
     from replang.data.embeddings import load_glove_en, load_ptwiki
@@ -86,11 +91,23 @@ def prepare(top_n: int = typer.Option(None, help="palavras mantidas dos embeddin
     rprint("Mac-Morpho →", prepare_macmorpho())
     rprint("PT →", load_ptwiki(top_n))
     rprint("EN →", load_glove_en(top_n))
+    if legal:
+        from replang.data.legal import (
+            prepare_legal_corpus,
+            prepare_legal_sts,
+            prepare_lener,
+            prepare_rulingbr_ementas,
+        )
+
+        rprint("Jurídico (RulingBR) →", prepare_legal_corpus())
+        rprint("LeNER-Br →", prepare_lener())
+        rprint("JurisBERT STS →", prepare_legal_sts())
+        rprint("Ementas com área →", prepare_rulingbr_ementas())
 
 
 @app.command()
 def train(
-    what: str = typer.Argument("all", help="all | w2v | fasttext | glove | doc2vec | bilm"),
+    what: str = typer.Argument("all", help="all | w2v | fasttext | glove | doc2vec | bilm | legal"),
     fast: bool = typer.Option(False, help="versões reduzidas (épocas/passos menores)"),
     force: bool = typer.Option(False, help="retreina mesmo se o cache existir"),
 ):

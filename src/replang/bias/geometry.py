@@ -342,8 +342,15 @@ def top_indirect_bias_pairs(
     return df.head(topn).reset_index(drop=True)
 
 
-def predicted_names(wv: WordVectors, seed_names: Sequence[str], non_names: Sequence[str], *, candidates: Sequence[str] | None = None,
-                    threshold: float = 0.0, C: float = 1.0) -> set[str]:
+def predicted_names(
+    wv: WordVectors,
+    seed_names: Sequence[str],
+    non_names: Sequence[str],
+    *,
+    candidates: Sequence[str] | None = None,
+    threshold: float = 0.0,
+    C: float = 1.0,
+) -> set[str]:
     """Nomes próprios são "específicos de gênero" por definição (*Mary/John* está nos pares do artigo),
     mas dominam a geração de analogias. Um SVM linear nomes × substantivos comuns, treinado com
     listas-semente, estima o conjunto de nomes no vocabulário para excluí-los."""

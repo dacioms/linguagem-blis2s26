@@ -24,6 +24,7 @@ um bloco do roteiro e a um ou mais artigos:
 | 7 · Avaliação | intrínseca (analogias) × extrínseca (POS tagging, similaridade de sentenças) | Hartmann et al. (2017) |
 | 8 · Viés de gênero | direção de gênero, DirectBias, viés indireto, analogias geradas, hard/soft debias | Bolukbasi et al. (2016) |
 | 9 · Contextual | biLM, uma palavra ↦ vários vetores, pesos por camada | Peters et al. (2018) |
+| 10 · Contexto jurídico | embeddings gerais × treinados em decisões do STF: vizinhos, deslocamento de domínio, analogias jurídicas | `docs/juridico.md` |
 """
     )
     c1, c2 = st.columns(2)

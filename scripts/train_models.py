@@ -155,6 +155,31 @@ def train_bilm(sentences, fast: bool, force: bool):
     log("  salvo", out)
 
 
+def train_legal(fast: bool, force: bool):
+    """Modelos do eixo jurídico: Skip-gram, CBOW e fastText sobre decisões do STF (RulingBR)."""
+    from replang.data.legal import load_legal_sentences
+    from replang.models.trainers import train_fasttext, train_word2vec
+
+    sentences = load_legal_sentences()
+    log(
+        f"corpus jurídico (RulingBR/STF): {len(sentences)} sentenças, {sum(map(len, sentences))} tokens"
+    )
+    ep = 3 if fast else 5
+    log("legal word2vec skip-gram 100d …")
+    wv = train_word2vec(
+        sentences, name="legal_sg100", dim=100, sg=1, negative=10, epochs=ep, force=force
+    )
+    log("  ", wv, wv.most_similar("sentença", topn=5))
+    log("legal word2vec CBOW 100d …")
+    wv = train_word2vec(
+        sentences, name="legal_cbow100", dim=100, sg=0, negative=10, epochs=ep, force=force
+    )
+    log("  ", wv)
+    log("legal fastText skip-gram 100d …")
+    wv, _ = train_fasttext(sentences, name="legal_ft100", dim=100, sg=1, epochs=ep, force=force)
+    log("  ", wv, wv.most_similar("inconstitucionalidade", topn=5))
+
+
 def main(what: str = "all", fast: bool = False, force: bool = False):
     PATHS.ensure()
     sentences = load_machado_sentences()
@@ -169,6 +194,8 @@ def main(what: str = "all", fast: bool = False, force: bool = False):
         train_doc2vec(fast, force)
     if what in ("all", "bilm"):
         train_bilm(sentences, fast, force)
+    if what in ("all", "legal"):
+        train_legal(fast, force)
     log("concluído")
 
 

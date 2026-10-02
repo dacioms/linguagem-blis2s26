@@ -99,3 +99,31 @@ Convenções: **[NB]** notebook; **[APP]** página do app; **[D]** pergunta de d
 - [ ] `uv run pytest` verde
 - [ ] `uv run replang notebooks run` (opcional: regenerar saídas; ≈ 30 min)
 - [ ] `uv run replang app` e abrir as 10 páginas uma vez (cache aquecido)
+
+---
+
+## Extensão: contexto jurídico (duas formas de uso)
+
+**Forma 1 — "janelas jurídicas" dentro dos 4 h (≈ 3 min por bloco, sem alterar o tempo total):**
+
+| Bloco | Janela (3 min) | Material |
+|---|---|---|
+| A | a linha de *sentença* na matriz de coocorrência do STF: *prolatada, reforma, anulação* — não *frase* | nb 14 §2 |
+| B | analogia *autor : réu :: apelante : apelado* no modelo do STF × Wikipédia | app p. 10 |
+| C | fastText e os papéis *-ante/-ado*; *habeas_corpus* como frase | nb 14 §8–9 |
+| D | a normalização "numerais → 0" apaga *Lei 13.105/2015*; NER e STS jurídicos como avaliação na tarefa | nb 14 §1.1, §5–6 |
+| E | papéis processuais no eixo de gênero (separação × centro) e o ranqueador com consultas gêmeas | nb 15 §2, §6 |
+| F | polissemia técnica (*sentença*) como caso ideal de representação contextual; alucinação de precedentes | `docs/juridico.md` §3-F |
+
+**Forma 2 — módulo autônomo de 50 min (para turma de Direito/Tecnologia):**
+
+| Tempo | Conteúdo | Material |
+|---|---|---|
+| 0:00 | Por que o Direito é especial; a língua do Direito; particularidades brasileiras | `docs/juridico.md` §1–2 |
+| 0:10 | Deslocamento de domínio ao vivo: *sentença, título, pena, trânsito, remédio* | app p. 10; nb 14 §3 |
+| 0:20 | Avaliar na tarefa: NER (LeNER-Br), similaridade de ementas (JurisBERT), área (RulingBR) | nb 14 §5–7 |
+| 0:30 | O viés que vem junto no Direito: papéis, termos neutros, ranqueador gêmeo, debias e seus limites | nb 15 §2–7 |
+| 0:42 | Governança: CNJ 332/2020 e 615/2025, LGPD, PL 2338; Victor, Athos, Sinapses | nb 15 §8 |
+| 0:46 | Debate: auditoria × decisão; IA em matéria penal; explicabilidade; responsabilidade | `docs/juridico.md` §7 |
+
+Preparação adicional: `uv run replang prepare` (baixa RulingBR, LeNER-Br e JurisBERT) e `uv run replang train legal` (≈ 4 min).

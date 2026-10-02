@@ -13,6 +13,7 @@ linguagem-blis2s26/
 │   │            embeddings.py    Wikipedia2Vec PT, GloVe EN (truncados), conector NILC, modelos locais
 │   │            lexicons.py      pares definicionais/equalização, profissões, palavras de gênero (EN: debiaswe; PT: autoral)
 │   │            analogies.py     questions-words (EN), LX-4WAnalogies (PT-BR/EU)
+│   │            legal.py         corpora jurídicos (RulingBR, LeNER-Br, JurisBERT STS), léxico jurídico, perfil de corpus, deslocamento de domínio
 │   ├── models/  cooccurrence.py  contagem → PPMI → SVD; one-hot; BoW/TF-IDF
 │   │            word2vec_np.py   Skip-gram/CBOW, NEG/HS (Huffman), subamostragem, frases — numpy
 │   │            glove_np.py      GloVe com AdaGrad — numpy
@@ -28,12 +29,12 @@ linguagem-blis2s26/
 ├── scripts/  train_models.py     treina todos os modelos locais;  build_notebooks.py  gera/executa .ipynb de notebooks/_src
 ├── notebooks/_src/nb_*.py        fonte dos notebooks (md/code) — editar aqui e rodar `replang notebooks build`
 ├── notebooks/*.ipynb             notebooks gerados e executados (saídas incluídas)
-├── app/streamlit_app.py + views/ interface multipágina (10 páginas)
+├── app/streamlit_app.py + views/ interface multipágina (11 páginas; a 10ª é o contexto jurídico)
 ├── tests/                        pytest (27 testes, sem rede)
 ├── data/samples/                 artefatos pequenos versionados (embeddings truncados, léxicos, analogias)
 ├── data/processed/               corpora normalizados (versionados: Machado, Mac-Morpho)
 ├── data/raw/, data/models/       downloads e modelos treinados (ignorados pelo git)
-└── docs/                         estrutura didática, roteiro 4h, glossário, resumos dos artigos
+└── docs/                         estrutura didática, roteiro 4h, glossário, resumos dos artigos, juridico.md (eixo jurídico)
 ```
 
 ## Fluxo de dados
