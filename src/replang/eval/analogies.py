@@ -37,13 +37,15 @@ def evaluate_analogies(
     batch: int = 1024,
     seed: int = 0,
 ) -> pd.DataFrame:
-    """Acurácia por categoria. Colunas: categoria, tipo, n, cobertas, acertos, acurácia."""
+    """Acurácia por categoria. Colunas: categoria, tipo, n, cobertas (no vocabulário), avaliadas
+    (após a amostragem ``max_per_category``), acertos, acurácia (= acertos/avaliadas)."""
     unit = wv.unit if restrict is None else wv.unit[:restrict]
     n_search = len(unit)
     rng = np.random.default_rng(seed)
     rows = []
     for cat, qs in aset.categories.items():
         qs_in = [q for q in qs if all(w in wv.index and wv.index[w] < n_search for w in q)]
+        n_covered = len(qs_in)
         if max_per_category and len(qs_in) > max_per_category:
             idx = rng.choice(len(qs_in), max_per_category, replace=False)
             qs_in = [qs_in[i] for i in sorted(idx)]
@@ -74,7 +76,8 @@ def evaluate_analogies(
                 "categoria": cat,
                 "tipo": "semântica" if aset.is_semantic(cat) else "sintática",
                 "n": len(qs),
-                "cobertas": len(qs_in),
+                "cobertas": n_covered,
+                "avaliadas": len(qs_in),
                 "acertos": correct,
                 "acurácia": correct / len(qs_in) if qs_in else np.nan,
             }
