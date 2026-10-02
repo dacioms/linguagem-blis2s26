@@ -114,7 +114,7 @@ pd.DataFrame([{"palavra": w, "sentido geral": g, "sentido jurídico": j} for w, 
     md("""
 ## 4. Analogias: as gerais perdem cobertura; as jurídicas aparecem
 
-O LX-4WAnalogies (capitais, moedas, família) é um teste "da Wikipédia". No modelo jurídico a **cobertura** cai e a acurácia fica sem sentido — reforçando a conclusão de Hartmann et al. Em compensação, relações próprias do domínio funcionam: *autor : réu :: apelante : apelado*, *juiz : sentença :: tribunal : acórdão*, *civil : CPC :: penal : CPP*.
+O LX-4WAnalogies (capitais, moedas, família) é um teste "da Wikipédia". No modelo jurídico a **cobertura** cai para poucos por cento e a acurácia fica sem sentido — reforçando a conclusão de Hartmann et al. Testamos então relações próprias do domínio (*autor : réu :: apelante : apelado*, *juiz : sentença :: tribunal : acórdão*, *civil : CPC :: penal : CPP*). Expectativa honesta: com 6 M tokens e 100 dimensões, poucas analogias "fecham" no top-5 — mas as que fecham (*civil:cpc::penal:cpp*, *réu:ré::autor:autora*) só fecham no modelo **jurídico**, e os candidatos errados do STF são *do domínio* (*acusado, ré, acordão, procedente*), enquanto os da Wikipédia são aleatórios (*bemol, atari*).
 """),
     code('''
 from replang.data.analogies import load_analogies
@@ -246,7 +246,7 @@ for ws in [("dano", "moral"), ("recurso", "extraordinário"), ("prisão", "preve
 
 1. **Vocabulário e forma**: sentenças mais longas, numerais e siglas como entidades, latim; o pré-processamento genérico destrói informação jurídica.
 2. **Semântica**: palavras polissêmicas deslocam-se por completo (Jaccard ≈ 0); embeddings gerais "não sabem Direito" nem com 200 M tokens de Wikipédia.
-3. **Avaliação**: a lição de Hartmann et al. vale em dobro — analogias gerais são irrelevantes; nas tarefas jurídicas (NER, STS de ementas, área) o embedding **de domínio** e o **fastText** (OOV) tendem a vencer, e o TF-IDF é um rival sério porque o vocabulário técnico já é discriminativo.
+3. **Avaliação**: a lição de Hartmann et al. vale em dobro — analogias gerais são irrelevantes (cobertura de 7 % no STF); nas tarefas jurídicas o embedding **de domínio** vence o geral (STS de ementas: AUC 0,81–0,82 × 0,75; área: 67 % × 64 %; NER: empate técnico, ambos muito acima do literário) e o **fastText** ajuda com OOV; mas o **TF-IDF é o melhor** em STS (0,91) e em área (78 %), porque o vocabulário técnico já é discriminativo e as ementas compartilham termos exatos. Embeddings de palavras somados **não** são o estado da arte para similaridade de documentos jurídicos — modelos contextuais (JurisBERT) são.
 4. **Aplicações** (ver `docs/juridico.md` §5): pesquisa de jurisprudência, triagem/classificação (Victor), agrupamento de recursos repetitivos (Athos), extração de entidades, sumarização/linguagem simples.
 
 ### Perguntas para discussão

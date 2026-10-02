@@ -44,6 +44,9 @@ print(f"STF: variância explicada {np.round(ev[:4], 3)} (aleatório {random_pca_
 pca_variance_figure(ev, random_pca_baseline(leg.dim, len(used)), title="STF (RulingBR): variância explicada pela PCA das diferenças dos pares de gênero")
 '''),
     md("""
+> **Leitura.** No corpus do STF a 1ª componente explica pouco mais que o piso aleatório: a direção de gênero existe, mas é **fraca e inclinada** — *ele* projeta forte (−0,27) e *ela* fraco (+0,11). Faz sentido: o texto jurídico usa o **masculino genérico** (*o réu, o autor, o servidor*) como forma não marcada, e pronomes pessoais contrastivos são raros em acórdãos. Consequência prática: no domínio, a direção obtida com pares "gerais" é menos confiável; pares de **papéis processuais** (*autora/autor, ré/réu*) são sementes melhores — e é o que o próximo painel explora. Todas as projeções abaixo devem ser lidas **relativamente** (um papel em relação aos outros), não em valor absoluto.
+"""),
+    md("""
 ## 2. Papéis processuais: separação gramatical × deslocamento do centro
 
 Como no notebook 10, para cada par de papéis (*juíza/juiz, ré/réu, autora/autor, advogada/advogado…*) medimos a **separação** (marca morfológica: esperada) e o **centro** (para onde o *conceito* pende). Papéis **epicenos** (*recorrente, agravante, contribuinte, vítima, testemunha*) só têm centro — se pendem, é estereótipo ou estatística do corpus (quem é vítima, quem é testemunha…).
@@ -61,7 +64,7 @@ roles = pd.DataFrame(rows).sort_values("centro")
 roles.style.format({c: "{:+.3f}" for c in ["proj. fem.", "proj. masc.", "separação", "centro"]}, na_rep="—").background_gradient(subset=["centro"], cmap="RdBu_r")
 '''),
     md("""
-Leia com cuidado: no corpus do STF, *ré/réu* e *acusada/acusado* têm separação morfológica clara; o **centro** reflete a frequência com que cada papel aparece em contextos "femininos" (direito de família, previdenciário, violência doméstica) ou "masculinos" (penal). Isso **não** é um estereótipo do modelo: é a estatística do que chega ao STF — que, por sua vez, reflete a sociedade. O ponto é que um sistema treinado nisso **herda** a estatística como se fosse semântica.
+Leia com cuidado (e relativamente — a direção é inclinada para *ele*, então quase todos os centros são negativos): *ré/réu*, *delegada/delegado* e *acusada/acusado* têm separação morfológica clara; *promotora/promotor* e *procuradora/procurador* quase nenhuma (formas raras no corpus). O **centro** reflete a frequência com que cada papel aparece em contextos "femininos" (direito de família, previdenciário, violência doméstica) ou "masculinos" (penal). Isso **não** é um estereótipo do modelo: é a estatística do que chega ao STF — que, por sua vez, reflete a sociedade. O ponto é que um sistema treinado nisso **herda** a estatística como se fosse semântica.
 """),
     md("""
 ## 3. Termos jurídicos neutros no eixo de gênero: STF × Wikipédia
@@ -97,17 +100,24 @@ Quais pares de termos neutros têm similaridade explicada pela direção de gên
 top_indirect_bias_pairs(leg, neutros, g_leg, topn=15, min_cos=0.25).style.format({"cos": "{:.2f}", "β": "{:.0%}", "proj_g(w)": "{:+.2f}", "proj_g(v)": "{:+.2f}"})
 '''),
     md("""
-## 5. Analogias geradas no domínio jurídico
+## 5. As "direções de papel" são consistentes entre si?
 
-A eq. (1) de Bolukbasi com semente (*ela*, *ele*) sobre o modelo do STF, separando pares morfológicos de candidatos a estereótipo (notebook 10).
+A geração automática de analogias (eq. 1 de Bolukbasi) exige uma direção de gênero nítida; com a direção fraca do corpus do STF ela devolve ruído (tente: `generate_analogies(leg, "ela", "ele", ...)`). Fazemos a pergunta de forma mais direta: os deslocamentos *autora→autor*, *ré→réu*, *juíza→juiz*, *advogada→advogado* são **paralelos** (uma única "direção feminino→masculino", como no notebook 02) ou cada papel tem a sua? A matriz de cossenos entre os vetores-diferença responde.
 """),
     code('''
-an = generate_analogies(leg, "ela", "ele", delta=1.0, topn=120, restrict=20000, exclude=lex.all_gender_words())
-gram, stereo = split_analogies_pt(an)
-print(f"{len(an)} analogias → {len(gram)} gramaticais, {len(stereo)} sem relação morfológica")
-print("gramaticais:", list(zip(gram.x[:10], gram.y[:10])))
-print("candidatos a estereótipo / estatística do corpus:", list(zip(stereo.x[:20], stereo.y[:20])))
+import plotly.express as px
+pairs_roles = [(f, m) for f, m in LEGAL.gendered_roles if f != m and leg.has(f, m)]
+D = np.stack([leg[f] - leg[m] for f, m in pairs_roles]); D /= np.linalg.norm(D, axis=1, keepdims=True)
+S = D @ D.T
+names = [f"{f}/{m}" for f, m in pairs_roles]
+px.imshow(S, x=names, y=names, zmin=-1, zmax=1, color_continuous_scale="RdBu", text_auto=".2f", template="plotly_white", height=620,
+          title="cos entre os vetores (feminino − masculino) dos papéis processuais no STF").show()
+off = S[np.triu_indices(len(names), 1)]
+print(f"cosseno médio entre direções de papel: {off.mean():.2f} (pares de gênero gerais na Wikipédia costumam ficar acima de 0,5)")
 '''),
+    md("""
+Cossenos altos entre pares = uma direção de gênero compartilhada (como *rei/rainha*, *homem/mulher* na Wikipédia); cossenos baixos = cada papel codifica o gênero de forma própria, misturada ao seu contexto típico (*ré* ↔ violência doméstica, *autora* ↔ previdenciário). No corpus jurídico predomina o segundo caso — mais uma razão para medir viés **por tarefa** (seção 6) em vez de confiar numa única direção global.
+"""),
     md("""
 ## 6. Experimento de amplificação: um ranqueador de ementas "vê" gênero?
 
@@ -144,7 +154,7 @@ for a, b in pares_consulta[:3]:
     print(f"{a[:45]:<47} ‖Δ‖={np.linalg.norm(d):.3f}  fração de Δ ao longo de g = {abs(float(d @ g_leg)) / (np.linalg.norm(d) + 1e-9):.0%}")
 '''),
     md("""
-Se a fração de Δ ao longo de *g* é alta, as consultas gêmeas diferem **quase só pelo gênero** — e ainda assim o ranking muda: o sistema está usando o gênero da parte como critério de relevância. Um *debias* das consultas (projetar fora de *g*) tornaria os rankings idênticos; mas isso também apagaria informação legítima quando o gênero **é** juridicamente relevante (Lei Maria da Penha, licença-maternidade). Não há resposta técnica única: é decisão de projeto, documentada.
+As consultas gêmeas diferem só pela forma do papel (*autora/autor*), mas o *top-10* muda em 3–5 posições e, em alguns casos, até o **1º resultado** e a **área** do precedente recomendado. Só uma parte dessa diferença (10–35 %) está na direção de gênero *g*; o resto é a vizinhança própria de cada forma (*ré* coocorre com violência doméstica, *réu* com tráfico…) — a estatística do corpus virou critério de relevância. Um *debias* das consultas (projetar fora de *g*) tornaria os rankings idênticos; mas isso também apagaria informação legítima quando o gênero **é** juridicamente relevante (Lei Maria da Penha, licença-maternidade). Não há resposta técnica única: é decisão de projeto, documentada.
 """),
     md("""
 ## 7. Debias no jurídico: o que resolve e o que não resolve
@@ -175,7 +185,7 @@ for name, X in [("antes", X_before), ("depois (hard debias)", X_after)]:
     print(f"k-NN recupera o 'lado' de gênero dos termos neutros — {name}: {acc:.0%} (acaso = 50%)")
 '''),
     md("""
-Como em Gonen & Goldberg (2019): a projeção em *g* vai a zero, mas os termos que estavam "do lado feminino" continuam **próximos entre si** — a estrutura de agrupamento sobrevive. Para um sistema de decisão, o viés foi escondido, não removido; para uma **auditoria**, o embedding original é mais útil que o corrigido.
+Dois resultados sóbrios. (i) O hard debias zera o DirectBias e o PairBias, mas os rankings gêmeos melhoram **pouco** (7–8 em 10): as ementas também contêm marcas de gênero e a diferença entre *autora* e *autor* não está só em *g*. Igualar os rankings exigiria neutralizar consultas **e** documentos — apagando informação juridicamente relevante (Lei Maria da Penha, licença-maternidade). (ii) Como em Gonen & Goldberg (2019): a projeção em *g* vai a zero, mas os termos que estavam "do lado feminino" continuam **próximos entre si** (o k-NN ainda acerta acima do acaso) — a estrutura de agrupamento sobrevive. Para um sistema de decisão, o viés foi escondido, não removido; para uma **auditoria**, o embedding original é mais útil que o corrigido.
 """),
     md("""
 ## 8. Aplicações, governança e debates
