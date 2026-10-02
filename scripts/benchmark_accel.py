@@ -77,8 +77,6 @@ def main(quick: bool = False):
     def fn(wv):
         return pos_tagging_eval(wv, tr, te, max_train_tokens=ntok // 2, backend="jax")["acurácia"]
 
-        "acurácia"
-    ]  # noqa: E731
     _, t1 = timed(lambda: [fn(m) for m in models])
     _, tp = timed(lambda: parallel_map(fn, models))
     rows.append(("4 avaliações POS: série × paralelo (joblib)", t1, tp))
