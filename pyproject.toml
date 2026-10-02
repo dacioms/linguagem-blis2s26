@@ -1,0 +1,13 @@
+[project]
+name = "linguagem-blis2s26"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "gensim>=4.4.0",
+    "ipykernel>=7.4.0",
+    "jupyterlab>=4.6.4",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.3",
+    "scikit-learn>=1.9.1",
+]
