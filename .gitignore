@@ -33,3 +33,7 @@ Thumbs.db
 
 # corpus jurídico completo de treino (gerado por `replang prepare`); a amostra *_sample é versionada
 data/processed/legal_sentences.txt.gz
+
+# Streamlit agent skills (symlinks específicos do ambiente, instalados por `streamlit skills`)
+.agents/skills/developing-with-streamlit
+.claude/skills/developing-with-streamlit
