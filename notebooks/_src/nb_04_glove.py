@@ -75,6 +75,21 @@ for w in ["rei", "gato", "paris"]:
     print(f"{w:<6} {[x for x, _ in wv_g.most_similar(w, topn=4)]}")
 '''),
     md("""
+### 3.1 O mesmo algoritmo em JAX: `jit` + *scatter-add* (CPU ou GPU)
+
+O gargalo da versão numpy é o `np.add.at` (acumulação esparsa, uma *thread*). `replang.models.glove_jax.GloVeJax` compila a época inteira (`jax.jit` + `lax.fori_loop`) e usa `.at[].add`; em CPU é 5–8× mais rápido e, com `uv sync --extra cuda`, roda na GPU sem mudar uma linha. Os resultados são equivalentes (mesma função objetivo, mesmo AdaGrad).
+"""),
+    code('''
+from replang.accel import report
+from replang.models.glove_jax import GloVeJax
+print(report())
+sub = sents[:30000 if FAST else 60000]
+t = time.time(); gn = GloVe(dim=100, window=5, epochs=3, min_count=5, x_max=50, batch_size=16384).fit(sub); tn = time.time() - t
+t = time.time(); gj = GloVeJax(dim=100, window=5, epochs=3, min_count=5, x_max=50, batch_size=16384).fit(sub); tj = time.time() - t
+print(f"3 épocas em {len(sub)} sentenças — numpy: {tn:.1f}s (perda {gn.history[-1]['loss']:.4f}) | JAX: {tj:.1f}s (perda {gj.history[-1]['loss']:.4f}) → {tn/tj:.1f}×")
+print("vizinhos de 'amor' — numpy:", [w for w, _ in gn.to_wordvectors().most_similar("amor", topn=5)], "| JAX:", [w for w, _ in gj.to_wordvectors().most_similar("amor", topn=5)])
+'''),
+    md("""
 ## 4. GloVe no corpus Machado e comparação com Skip-gram e PPMI-SVD
 
 O modelo `machado_glove100` (numpy, 15 épocas, janela 5) foi treinado por `replang train`. Comparamos com o Skip-gram (gensim) e com o pipeline de contagem do notebook 01 em três frentes: vizinhos, analogias PT-BR (sintáticas) e a **mini-similaridade** de palavras (`MINI_WORDSIM_PT`).

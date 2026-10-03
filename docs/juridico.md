@@ -72,7 +72,7 @@
 | O vocabulário é diferente? | menor diversidade por token, sentenças mais longas, mais numerais e latim | TTR 0,021 × 0,032 (Machado); 23 × 16 tokens/sentença; 15 % × 3 % de sentenças > 40 tokens; numerais 3,5 % × 0,15 % | nb 14 §1 |
 | Os vizinhos mudam? | Jaccard ≈ 0 nas polissêmicas | Jaccard@10 médio = **0,002** nas 27 polissêmicas (0,033 nas palavras comuns); *prescrição*: medicamentos × punitiva/quinquenal | nb 14 §3, app p. 10 |
 | Analogias gerais funcionam? | cobertura cai | cobertura do LX-4WAnalogies: 39 % (Wikipédia) → **7 %** (STF); analogias jurídicas fecham só no STF (*civil:cpc::penal:cpp*) | nb 14 §4 |
-| NER jurídico (LeNER-Br)? | domínio ≥ geral; fastText ajuda | F1 macro (token): STF 0,643 ≈ Wikipédia 0,637 ≫ Machado 0,484; fastText 0,640 | nb 14 §5 |
+| NER jurídico (LeNER-Br)? | domínio ≥ geral; fastText ajuda | F1 macro (token): Wikipédia 0,62 ≈ STF fastText 0,61 ≈ STF 0,60 ≫ Machado 0,42 (classificador linear; com lbfgs: 0,64/0,64/0,64/0,48) | nb 14 §5 |
 | Similaridade de ementas (JurisBERT)? | domínio > geral; TF-IDF forte | AUC: STF fastText 0,82 > STF 0,81 > Wikipédia 0,75 > Machado 0,67; **TF-IDF 0,91** | nb 14 §6 |
 | Área do Direito pela ementa (RulingBR)? | domínio > geral | 67 % (STF) > 64 % (Wikipédia) > 45 % (Machado); **TF-IDF 78 %** | nb 14 §7 |
 | O viés de gênero é diferente? | direção presente; papéis com marca morfológica | direção **fraca e inclinada** (masculino genérico); separação morfológica clara em *ré/réu*; consultas gêmeas (*autora/autor*) mudam 3–5 dos 10 precedentes recomendados; debias melhora pouco os rankings | nb 15 |

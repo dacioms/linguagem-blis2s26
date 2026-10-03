@@ -42,7 +42,9 @@ for pkg in ["numpy", "scipy", "sklearn", "gensim", "plotly", "streamlit", "jax"]
     except Exception as e:
         print(f"{pkg:<10} ausente ({type(e).__name__}) — opcional" if pkg == "jax" else f"{pkg:<10} ERRO: {e}")
 import replang
+from replang.accel import report
 print("replang", replang.__version__, "| dados em", PATHS.data)
+print("aceleração:", report(), "— ver docs/aceleracao.md (GPU: uv sync --extra cuda)")
 '''),
     md("""
 ## 2. Fontes de dados públicas

@@ -44,17 +44,22 @@ from replang.data.embeddings import load_ptwiki, load_local_model
 from replang.models.trainers import list_models, load_fasttext_model
 models = {"Wikipedia2Vec PT 100d": load_ptwiki()}
 for m in list_models():
-    if m["algo"] in ("word2vec", "fasttext", "glove-numpy"):
+    if m["algo"] in ("word2vec", "fasttext") or m["algo"].startswith("glove"):
         models[f"{m['name']} ({m['algo']})"] = load_local_model(m["name"])
 ftm = load_fasttext_model("machado_ft100")
 oov_fn = (lambda w: ftm.wv[w]) if ftm is not None else None
 n_train = 25000 if FAST else 60000
-rows = []
-for name, wv in models.items():
+from replang.accel import report
+from replang.eval.parallel import parallel_map
+print("aceleração:", report())
+def _eval_pos(item):
+    name, wv = item
     t = time.time()
-    r = pos_tagging_eval(wv, train, test, max_train_tokens=n_train, oov_fn=oov_fn if "ft100" in name else None)
-    rows.append({"modelo": name, "dim": wv.dim, "acurácia POS": r["acurácia"], "acurácia nos OOV": r["acurácia_oov"], "taxa OOV (teste)": r["taxa_oov"], "s": round(time.time() - t)})
-    print(f"{name:<40} {r['acurácia']:.3f}  (OOV {r['taxa_oov']:.1%})  {rows[-1]['s']}s")
+    r = pos_tagging_eval(wv, train, test, max_train_tokens=n_train, oov_fn=(lambda w: ftm.wv[w]) if ("ft100" in name and ftm is not None) else None)
+    return {"modelo": name, "dim": wv.dim, "acurácia POS": r["acurácia"], "acurácia nos OOV": r["acurácia_oov"], "taxa OOV (teste)": r["taxa_oov"], "s": round(time.time() - t)}
+t0 = time.time()
+rows = parallel_map(_eval_pos, list(models.items()))   # um processo por modelo (REPLANG_JOBS); backend do classificador: JAX se instalado
+print(f"{len(rows)} avaliações em {time.time()-t0:.0f}s (paralelo)")
 pos_df = pd.DataFrame(rows).sort_values("acurácia POS", ascending=False)
 pos_df.style.format({"acurácia POS": "{:.3f}", "acurácia nos OOV": "{:.3f}", "taxa OOV (teste)": "{:.1%}"}).background_gradient(subset=["acurácia POS"], cmap="Greens")
 '''),

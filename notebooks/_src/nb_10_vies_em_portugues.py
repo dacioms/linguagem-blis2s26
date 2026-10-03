@@ -118,13 +118,23 @@ Bolukbasi et al. argumentam que o viés vem do texto. Testamos **causalmente** c
 import time
 from replang.data.corpora import synthetic_gender_corpus, SYNTHETIC_PROFESSIONS
 from replang.models.word2vec_np import Word2Vec
+from replang.accel import detect
+try:
+    from replang.models.word2vec_jax import SkipGramJax
+    USE_JAX = detect().use_jax_for("sgns")
+except Exception:
+    USE_JAX = False
+print("backend do Skip-gram:", "JAX (jit + scatter-add; GPU se disponível)" if USE_JAX else "numpy")
 pairs_syn = [("ela", "ele"), ("mulher", "homem"), ("mãe", "pai"), ("filha", "filho"), ("irmã", "irmão"), ("menina", "menino"), ("rainha", "rei"), ("esposa", "marido")]
 rows, profiles = [], {}
 for bias in ([0.5, 0.75, 1.0] if FAST else [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
     t = time.time()
     corpus = synthetic_gender_corpus(15000, bias=bias, seed=0)
     # sem subamostragem: no corpus sintético as palavras de gênero são frequentíssimas e seriam descartadas (t=1e-3 apaga o sinal!)
-    m = Word2Vec(dim=50, window=5, negative=10, epochs=8, sample=0, batch_size=128, seed=0).train(corpus)
+    if USE_JAX:
+        m = SkipGramJax(dim=50, window=5, negative=10, epochs=8, sample=0, seed=0).train(corpus)
+    else:
+        m = Word2Vec(dim=50, window=5, negative=10, epochs=8, sample=0, batch_size=128, seed=0).train(corpus)
     wv = m.to_wordvectors().normalized()
     g = gender_direction(wv, pairs_syn)
     pf = project(wv, SYNTHETIC_PROFESSIONS["estereotipo_feminino"], g); pm = project(wv, SYNTHETIC_PROFESSIONS["estereotipo_masculino"], g); pn = project(wv, SYNTHETIC_PROFESSIONS["neutras"], g)

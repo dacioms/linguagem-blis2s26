@@ -61,13 +61,20 @@ def train_gensim(sentences, fast: bool, force: bool):
 
 
 def train_glove(sentences, fast: bool, force: bool):
-    from replang.models.glove_np import GloVe
+    from replang.accel import detect
 
     out = PATHS.models / "machado_glove100.npz"
     if out.exists() and not force:
         log("glove: cache existente")
         return
-    log("GloVe (numpy) 100d …")
+    if detect().use_jax_for("glove"):
+        from replang.models.glove_jax import GloVeJax as GloVe
+
+        log(f"GloVe (JAX, {detect().device_kind}) 100d …")
+    else:
+        from replang.models.glove_np import GloVe
+
+        log("GloVe (numpy) 100d …")
     t = time.time()
     g = GloVe(dim=100, window=5, epochs=8 if fast else 15, min_count=5, x_max=50, batch_size=16384)
     g.fit(sentences, callback=lambda r: log("  glove", r))
@@ -76,7 +83,7 @@ def train_glove(sentences, fast: bool, force: bool):
     out.with_suffix(".json").write_text(
         json.dumps(
             {
-                "algo": "glove-numpy",
+                "algo": "glove-jax" if detect().use_jax_for("glove") else "glove-numpy",
                 "dim": 100,
                 "window": 5,
                 "epochs": g.epochs,
